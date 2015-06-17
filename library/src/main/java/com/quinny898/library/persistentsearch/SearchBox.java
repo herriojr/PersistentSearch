@@ -61,6 +61,8 @@ public class SearchBox extends RelativeLayout {
 	private ListView results;
 	private ArrayList<SearchResult> resultList;
 	private ArrayList<SearchResult> searchables;
+	private int maxRows;
+	private boolean filter;
 	private boolean searchOpen;
 	private boolean animate;
 	private View tint;
@@ -131,6 +133,8 @@ public class SearchBox extends RelativeLayout {
 			}
 
 		});
+		maxRows = 5;
+		filter = true;
 		resultList = new ArrayList<SearchResult>();
 		results.setAdapter(new SearchAdapter(context, resultList));
 		animate = true;
@@ -391,13 +395,11 @@ public class SearchBox extends RelativeLayout {
 	 */
 	public void updateResults() {
 		resultList.clear();
-		int count = 0;
-		for (int x = 0; x < searchables.size(); x++) {
-			if (searchables.get(x).title.toLowerCase().startsWith(
-					getSearchText().toLowerCase())
-					&& count < 5) {
+		int count = Math.min(maxRows, searchables.size());
+		for (int x = 0; x < count; x++) {
+			if (!filter
+					|| searchables.get(x).title.toLowerCase().startsWith(getSearchText().toLowerCase())) {
 				addResult(searchables.get(x));
-				count++;
 			}
 		}
 		if (resultList.size() == 0) {
@@ -458,7 +460,25 @@ public class SearchBox extends RelativeLayout {
 		search.setFilters(new InputFilter[] { new InputFilter.LengthFilter(
 				length) });
 	}
-	
+
+	public void setMaxRows(int length) {
+		if (length != maxRows) {
+			maxRows = length;
+			((SearchAdapter) results.getAdapter()).notifyDataSetChanged();
+		}
+	}
+
+	public void setFilterEnabled(boolean enabled) {
+		if (filter != enabled) {
+			filter = enabled;
+			((SearchAdapter) results.getAdapter()).notifyDataSetChanged();
+		}
+	}
+
+	public boolean isFilterEnabled() {
+		return filter;
+	}
+
 	/***
 	 * Set the text of the logo (default text when closed)
 	 * @param text Text
@@ -497,7 +517,7 @@ public class SearchBox extends RelativeLayout {
 	 * @param result SearchResult
 	 */
 	private void addResult(SearchResult result) {
-		if (resultList != null && resultList.size() < 6) {
+		if (resultList != null && resultList.size() < maxRows) {
 			resultList.add(result);
 			((SearchAdapter) results.getAdapter()).notifyDataSetChanged();
 		}
@@ -527,7 +547,11 @@ public class SearchBox extends RelativeLayout {
 	 * Set the searchable items from a list (replaces any current items)
 	 */
 	public void setSearchables(ArrayList<SearchResult> searchables){
+		if (searchables == null) {
+			searchables = new ArrayList<>();
+		}
 		this.searchables = searchables;
+		((SearchBox.SearchAdapter)this.results.getAdapter()).notifyDataSetChanged();
 	}
 
 	/***
@@ -704,7 +728,7 @@ public class SearchBox extends RelativeLayout {
 		resultList.clear();
 		int count = 0;
 		for (int x = 0; x < initialResults.size(); x++) {
-			if (count < 5) {
+			if (count < maxRows) {
 				addResult(initialResults.get(x));
 				count++;
 			}
@@ -809,6 +833,11 @@ public class SearchBox extends RelativeLayout {
 			});
 
 			return convertView;
+		}
+
+		public int getCount() {
+			int count = super.getCount();
+			return count;
 		}
 	}
 
