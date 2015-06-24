@@ -279,6 +279,10 @@ public class SearchBox extends RelativeLayout {
 		}
 		searchOpen = !searchOpen;
 	}
+
+	public boolean isSearchOpen() {
+		return searchOpen;
+	}
 	
 	/***
 	 * Hide the search results manually
@@ -359,7 +363,7 @@ public class SearchBox extends RelativeLayout {
 			mic.setVisibility(View.INVISIBLE);
 		}else{
 			pb.setVisibility(View.INVISIBLE);
-			mic.setVisibility(View.VISIBLE);
+			micStateChanged();
 		}
 	}
 	
@@ -838,7 +842,7 @@ public class SearchBox extends RelativeLayout {
 		public int getCount() {
 			int count = super.getCount();
 			return count;
-		}
+	}
 	}
 
 	public interface SearchListener {
